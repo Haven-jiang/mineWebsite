@@ -1,17 +1,14 @@
 package com.Haven.service.impl;
 
-import com.Haven.DTO.CronTaskDTO;
 import com.Haven.DTO.UserYouthDataDTO;
+import com.Haven.entity.UserEmailInfo;
 import com.Haven.entity.UserYouthData;
-import com.Haven.entity.YouthCourse;
+import com.Haven.mapper.UserEmailInfoMapper;
 import com.Haven.mapper.UserYouthDataMapper;
-import com.Haven.mapper.YouthCourseMapper;
 import com.Haven.service.UserYouthDataService;
 import com.Haven.service.UserYouthTaskService;
-import com.alibaba.fastjson.JSON;
+import com.Haven.utils.CommonUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import org.quartz.JobKey;
-import org.quartz.TriggerKey;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -35,12 +32,15 @@ public class UserYouthDataServiceImpl implements UserYouthDataService {
     @Autowired
     private UserYouthTaskService userYouthTaskService;
 
+    @Autowired
+    private UserEmailInfoMapper userEmailInfoMapper;
+
     @Override
     public void addUserYouthData(String userid, String nid) {
         if (checkYouthData(userid))
             return;
 
-        UserYouthData userYouthData = newUserYouthData(userid, nid);
+        UserYouthData userYouthData = buildUserYouthData(userid, nid);
         userYouthDataMapper.insert(userYouthData);
         userYouthTaskService.registerTask(userYouthData);
     }
@@ -50,7 +50,36 @@ public class UserYouthDataServiceImpl implements UserYouthDataService {
         if (checkYouthData(userid))
             return;
 
-        UserYouthData userYouthData = newUserYouthData(userid, nid, cron);
+        UserYouthData userYouthData = buildUserYouthData(userid, nid, cron);
+        userYouthDataMapper.insert(userYouthData);
+        userYouthTaskService.registerTask(userYouthData);
+    }
+
+
+    @Override
+    public void addUserYouthData(String userid, String nid, String cron, String email) {
+        if (checkYouthData(userid))
+            return;
+
+        UserYouthData userYouthData = buildUserYouthData(userid, nid, cron);
+
+        if (CommonUtils.checkEmail(email)) {
+            userEmailInfoMapper.insert(
+                    UserEmailInfo
+                            .builder()
+                            .email(email)
+                            .build()
+            );
+
+            userYouthData.setEmailId(
+                    userEmailInfoMapper.selectOne(
+                        new LambdaQueryWrapper<UserEmailInfo>()
+                                .select()
+                                .eq(UserEmailInfo::getEmail, email)
+                        ).getUuid()
+            );
+        }
+
         userYouthDataMapper.insert(userYouthData);
         userYouthTaskService.registerTask(userYouthData);
     }

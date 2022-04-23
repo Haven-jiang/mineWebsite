@@ -3,6 +3,7 @@ package com.Haven.entity;
 import com.Haven.DTO.FinishLogDTO;
 import com.Haven.utils.RandomUtil;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,6 +11,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -106,22 +108,39 @@ public class UserYouthData implements Serializable {
      * 完成历史
      */
 
-    private Map<String, String> finishHistory;
+    private List<FinishLogDTO> finishHistory;
+
+    /**
+     * 完成历史
+     */
+
+    private List<FinishLogDTO> sendHistory;
+
+
+    private String emailId;
 
     public byte[] getFinishHistory() {
         return JSON.toJSONBytes(finishHistory);
     }
 
     public void setFinishHistory(byte[] finishHistory) {
-        this.finishHistory = JSON.parseObject(finishHistory, Map.class);
+        this.finishHistory = conversionJsonList(finishHistory);
     }
 
-    public Map<String, String> getFinishHistoryObj() {
+    public List<FinishLogDTO> getFinishHistoryObj() {
         return finishHistory;
     }
 
-    public void putFinishHistory(String key, String value) {
-        this.finishHistory.put(key, value);
+    public void putFinishHistory(FinishLogDTO finishLog) {
+        this.finishHistory.add(finishLog);
+    }
+
+    public byte[] getSendHistory() {
+        return JSON.toJSONBytes(sendHistory);
+    }
+
+    public void setSendHistory(byte[] sendHistory) {
+        this.sendHistory = conversionJsonList(sendHistory);
     }
 
     public UserYouthData formatting() {
@@ -159,7 +178,8 @@ public class UserYouthData implements Serializable {
     public static UserYouthDataBuilder builder() {
         return new UserYouthDataBuilder()
                 .cron(RandomUtil.getRandomCron())
-                .finishHistory(new HashMap<>());
+                .finishHistory(new ArrayList<>(List.of(new FinishLogDTO())))
+                .sendHistory(new ArrayList<>());
     }
 
     public static class UserYouthDataBuilder {
@@ -173,5 +193,13 @@ public class UserYouthData implements Serializable {
             this.triggerGroup = "trigger-YouthLearn";
             return this;
         }
+    }
+
+    private List<FinishLogDTO> conversionJsonList(byte[] content) {
+        List<FinishLogDTO> finish = new ArrayList<>();
+        List<JSONObject> list = JSON.parseObject(content, List.class);
+        for (JSONObject obj : list) if (!obj.isEmpty())
+            finish.add(JSON.parseObject(obj.toString(), FinishLogDTO.class));
+        return finish;
     }
 }

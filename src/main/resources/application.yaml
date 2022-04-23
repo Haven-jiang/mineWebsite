@@ -51,7 +51,7 @@ spring:
     properties:
       mail:
       smtp:
-      auth: true
+      auth: false
       socketFactory:
       class: javax.net.ssl.SSLSocketFactory
   mvc:

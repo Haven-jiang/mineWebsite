@@ -94,7 +94,7 @@ public class JxYouthServiceImpl implements JxYouthService {
                         .eq(UserYouthData::getUserid, userid)
         );
         userYouthData.setLastFinishTime(LocalDateTime.now());
-        userYouthData.putFinishHistory(LocalDateTime.now().toString(), getCurrentCourse());
+        userYouthData.putFinishHistory(new FinishLogDTO(LocalDateTime.now(), getCurrentCourse()));
         userYouthDataMapper.updateById(userYouthData);
 
     }

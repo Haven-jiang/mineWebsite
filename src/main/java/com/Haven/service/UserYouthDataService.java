@@ -16,6 +16,8 @@ public interface UserYouthDataService {
 
     void addUserYouthData(String userid, String nid, String cron);
 
+    void addUserYouthData(String userid, String nid, String cron, String email);
+
     UserYouthData selectYouthData(String userid);
 
     UserYouthDataDTO selectYouthDataDTO(String userid);
