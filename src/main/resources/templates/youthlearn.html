@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="http://osscache.vol.jxmfkj.com/html/assets/js/course_data.js"></script>
+    <script>
+        $.post({
+            url: "/function/youthlearn/jiangxi/course",
+            data: {
+                id: course_data.result.id
+            }
+        })
+    </script>
+</head>
+<body>
+</body>
+</html>
