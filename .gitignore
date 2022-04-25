@@ -31,3 +31,6 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Java Class ###
+/src/main/java/com/Haven/controller/InitSqlController.java
