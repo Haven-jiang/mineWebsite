@@ -2,6 +2,7 @@ package com.Haven.utils;
 
 import org.springframework.context.annotation.Bean;
 
+import java.time.LocalDateTime;
 import java.util.Random;
 
 public class RandomUtil {
@@ -51,11 +52,11 @@ public class RandomUtil {
         int hour = new Random().nextInt(23);
         String day = "?";
         String month = "*";
-        int week = new Random().nextInt(3) + 2;
+        int week = new Random().nextInt(2) + 2;
 
         if (week == 2) {
-            if (hour < 12) hour = new Random().nextInt(11) + 12;
-            if (hour == 12 && minute <= 30) minute = new Random().nextInt(29) + 30;
+            if (hour < 13) hour = new Random().nextInt(8) + 15;
+            if (hour == 13 && minute <= 30) minute = new Random().nextInt(29) + 30;
         }
 
         return second + " " +

@@ -1,6 +1,5 @@
 package com.Haven.service.impl;
 
-import com.Haven.DTO.EmailContentDTO;
 import com.Haven.DTO.EmailInfoDTO;
 import com.Haven.service.EmailSendService;
 import org.slf4j.Logger;
@@ -8,13 +7,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.mail.MessagingException;
+import java.io.File;
 import java.util.Date;
 import java.util.Objects;
 
@@ -59,6 +58,11 @@ public class EmailSendServiceImpl implements EmailSendService {
             String alarmIconName = "success-alarm.png";
             ClassPathResource img = new ClassPathResource(alarmIconName);
             simpleMailMessage.addInline("icon", img);
+
+            for (EmailInfoDTO.Inline inline : emailInfo.getInlines()) {
+                if (inline.getContentFile().exists())
+                    simpleMailMessage.addInline(inline.getContentId(), inline.getContentFile());
+            }
 //            simpleMailMessage.addAttachment("image.jpg", new ClassPathResource("image.jpg"));
 
             mailSender.send(simpleMailMessage.getMimeMessage());

@@ -21,7 +21,7 @@ public class YouthPostController {
     private JxYouthService jxYouthService;
 
     @RequestMapping("/jiangxi/course")
-    public void updateCourse(String id) {
-        jxYouthService.updateCourse(id);
+    public void updateCourse(String id, String title, String uri) {
+        jxYouthService.updateCourse(id, title, uri);
     }
 }

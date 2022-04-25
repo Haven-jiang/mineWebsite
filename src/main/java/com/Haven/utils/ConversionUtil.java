@@ -5,9 +5,11 @@ import com.Haven.DTO.EmailContentDTO;
 import com.Haven.DTO.EmailInfoDTO;
 import com.Haven.DTO.UserYouthDataDTO;
 import com.Haven.entity.UserEmailInfo;
+import com.Haven.entity.UserResultImage;
 import com.Haven.entity.UserYouthData;
 import com.Haven.entity.YouthCourse;
 import com.Haven.mapper.UserEmailInfoMapper;
+import com.Haven.mapper.UserResultImageMapper;
 import com.Haven.mapper.UserYouthDataMapper;
 import com.Haven.mapper.YouthCourseMapper;
 import com.alibaba.fastjson.JSON;
@@ -17,13 +19,13 @@ import org.quartz.TriggerKey;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.text.MessageFormat;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.Objects;
 
 @Component
 public class ConversionUtil {
@@ -31,11 +33,17 @@ public class ConversionUtil {
     private static YouthCourseMapper youthCourseMapper;
     private static UserEmailInfoMapper userEmailInfoMapper;
     private static UserYouthDataMapper userYouthDataMapper;
+    private static UserResultImageMapper userResultImageMapper;
 
-    public ConversionUtil(YouthCourseMapper youthCourseMapper, UserEmailInfoMapper userEmailInfoMapper, UserYouthDataMapper userYouthDataMapper) {
+    public ConversionUtil(YouthCourseMapper youthCourseMapper,
+                          UserEmailInfoMapper userEmailInfoMapper,
+                          UserYouthDataMapper userYouthDataMapper,
+                          UserResultImageMapper userResultImageMapper) {
+
         ConversionUtil.youthCourseMapper = youthCourseMapper;
         ConversionUtil.userEmailInfoMapper = userEmailInfoMapper;
         ConversionUtil.userYouthDataMapper = userYouthDataMapper;
+        ConversionUtil.userResultImageMapper = userResultImageMapper;
     }
 
     public static UserYouthData toUserYouthData(String json) {
@@ -55,16 +63,18 @@ public class ConversionUtil {
         ).getId();
     }
 
+    public static String getCurrentCourseUri() {
+        return youthCourseMapper.selectOne(
+                new LambdaQueryWrapper<YouthCourse>()
+                        .select()
+                        .eq(YouthCourse::getCourse, "course")
+        ).getUri();
+    }
+
     public static UserYouthDataDTO toUserYouthDataDTO(UserYouthData userYouthData) {
         return UserYouthDataDTO
                 .builder()
-                .course(
-                        youthCourseMapper.selectOne(
-                                new LambdaQueryWrapper<YouthCourse>()
-                                        .select()
-                                        .eq(YouthCourse::getCourse, "course")
-                        ).getId()
-                )
+                .course(getCurrentCourse())
                 .cardNo(userYouthData.getUserid())
                 .subOrg(null)
                 .nid(userYouthData.getNid())
@@ -88,7 +98,7 @@ public class ConversionUtil {
     }
 
     public static UserYouthData buildUserYouthData(String userid, String nid, String cron) {
-        if (cron.equals("random"))
+        if (cron.isEmpty())
             return buildUserYouthData(userid, nid);
         return UserYouthData.builder()
                 .nid(nid)
@@ -97,7 +107,34 @@ public class ConversionUtil {
                 .build();
     }
 
+    public static UserYouthData buildUserYouthData(String userid, String nid, String cron, String realName) {
+        if (Objects.isNull(cron) || Objects.isNull(realName)) {
+            if (Objects.isNull(realName) && Objects.isNull(cron)) {
+                return buildUserYouthData(userid, nid);
+            }else if (Objects.isNull(cron)){
+                return UserYouthData.builder()
+                        .nid(nid)
+                        .realName(realName)
+                        .userid(userid)
+                        .build();
+            }else {
+                return UserYouthData.builder()
+                        .nid(nid)
+                        .cron(cron)
+                        .userid(userid)
+                        .build();
+            }
+        }
+        return UserYouthData.builder()
+                .nid(nid)
+                .realName(realName)
+                .userid(userid)
+                .cron(cron)
+                .build();
+    }
+
     public static String getEmailById(String uuid) {
+
         return userEmailInfoMapper.selectOne(
                 new LambdaQueryWrapper<UserEmailInfo>()
                         .select()
@@ -105,14 +142,25 @@ public class ConversionUtil {
         ).getEmail();
     }
 
+    public static String getImagePathById(String uuid) {
+
+        return userResultImageMapper.selectOne(
+                new LambdaQueryWrapper<UserResultImage>()
+                        .select()
+                        .eq(UserResultImage::getUuid, uuid)
+        ).getCurrentImagePath();
+    }
+
     public static EmailInfoDTO buildEmailInfoDTO(UserYouthData userYouthData) throws IOException {
         return EmailInfoDTO.builder()
                 .recipient(getEmailById(userYouthData.getEmailId()))
                 .subject("江西省 - 青年大学习 uuid:" + userYouthData.getUserid() + " 已完成")
+                .inlines(new ArrayList<>(List.of(new EmailInfoDTO.Inline("finish", new File(getImagePathById(userYouthData.getImageId()))))))
                 .text(buildEmailContentOne(
                         EmailContentDTO
                                 .builder()
                                 .username(userYouthData.getUserid())
+                                .service(userYouthData.getTriggerName())
                                 .textH1("你的青年大学习已完成")
                                 .textH2("截图如下:")
                                 .namespace("功能: 青年大学习")

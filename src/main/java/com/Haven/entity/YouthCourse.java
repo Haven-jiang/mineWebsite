@@ -13,4 +13,6 @@ import lombok.NoArgsConstructor;
 public class YouthCourse {
     private String course;
     private String id;
+    private String title;
+    private String uri;
 }

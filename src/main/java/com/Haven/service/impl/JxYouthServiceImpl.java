@@ -3,12 +3,12 @@ package com.Haven.service.impl;
 import com.Haven.DTO.FinishLogDTO;
 import com.Haven.DTO.ResponsePackDTO;
 import com.Haven.DTO.UserYouthDataDTO;
+import com.Haven.VO.UserYouthInfoVO;
 import com.Haven.entity.UserYouthData;
 import com.Haven.entity.YouthCourse;
 import com.Haven.mapper.UserYouthDataMapper;
 import com.Haven.mapper.YouthCourseMapper;
 import com.Haven.service.JxYouthService;
-import com.Haven.service.UserYouthDataService;
 import com.Haven.utils.HttpsClientUtil;
 import com.Haven.utils.RandomUtil;
 import com.alibaba.fastjson.JSON;
@@ -19,7 +19,9 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import static com.Haven.utils.ConversionUtil.getCurrentCourse;
 import static com.Haven.utils.ConversionUtil.toUserYouthDataDTO;
@@ -35,6 +37,8 @@ public class JxYouthServiceImpl implements JxYouthService {
 
     @Override
     public ResponsePackDTO postData(String data) {
+
+//        http://osscache.vol.jxmfkj.com/html/h5_index.html?accessToken=eiwjro34
 
         String uuid = RandomUtil.getRandomUUID(28);
         String getUrl = "http://osscache.vol.jxmfkj.com/html/h5_index.html?accessToken=" + uuid + "&openid=" + uuid;
@@ -137,6 +141,25 @@ public class JxYouthServiceImpl implements JxYouthService {
                 new YouthCourse(), new LambdaUpdateWrapper<YouthCourse>()
                         .set(YouthCourse::getId, courseId)
         );
+    }
+
+    @Override
+    public void updateCourse(String courseId, String title, String uri) {
+        YouthCourse course = YouthCourse.builder()
+                .course("course")
+                .id(courseId)
+                .title(title)
+                .uri(uri)
+                .build();
+        if (!Objects.isNull(
+                youthCourseMapper.selectOne(
+                        new LambdaQueryWrapper<YouthCourse>()
+                                .select()
+                                .eq(YouthCourse::getCourse, "course")
+                )))
+            youthCourseMapper.updateById(course);
+        else
+            youthCourseMapper.insert(course);
     }
 
     @Override

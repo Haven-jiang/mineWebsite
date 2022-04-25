@@ -12,7 +12,9 @@
         $.post({
             url: "/function/youthlearn/jiangxi/course",
             data: {
-                id: course_data.result.id
+                id: course_data.result.id,
+                title: course_data.result.title,
+                uri: course_data.result.uri
             }
         })
     </script>

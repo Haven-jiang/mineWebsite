@@ -13,7 +13,9 @@ import java.util.regex.Pattern;
  * @author yezhiqiu
  * @date 2021/07/28
  */
-public class CommonUtils {
+
+
+public class CommonUtil {
 
     /**
      * 检测邮箱是否合法
@@ -57,8 +59,13 @@ public class CommonUtils {
 
 
     public static String getLocalPath() {
-        String path = Objects.requireNonNull(MineWebsiteApplication.class.getResource("")).getPath().replaceAll("file:/", "");
+        String path = Objects.requireNonNull(MineWebsiteApplication.class.getResource("")).getPath().replaceAll("file:", "");
         return path.substring(0, path.lastIndexOf("target")) + "target/";
+    }
+
+    public static String getImagePath() {
+        String path = Objects.requireNonNull(MineWebsiteApplication.class.getResource("")).getPath().replaceAll("file:", "");
+        return path.substring(0, path.lastIndexOf("target")) + "target/image/";
     }
 
 }

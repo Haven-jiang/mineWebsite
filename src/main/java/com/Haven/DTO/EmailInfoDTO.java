@@ -6,7 +6,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -62,11 +65,27 @@ public class EmailInfoDTO {
 
     private String error;
 
+
+    private List<Inline> inlines;
+
+    public void putInline(String contentId, File contentFile) {
+        this.inlines.add(new Inline(contentId, contentFile));
+    }
+
     /**
      * 附件
      */
 
     @JsonIgnore
     private MultipartFile[] multipartFiles;
+
+
+    @AllArgsConstructor
+    @NoArgsConstructor
+    @Data
+    public static class Inline {
+        private String contentId;
+        private File contentFile;
+    }
 
 }

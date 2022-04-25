@@ -42,6 +42,12 @@ public class UserYouthData implements Serializable {
     private String userid;
 
     /**
+     * 真实姓名
+     */
+
+    private String realName;
+
+    /**
      * token - 随机token
      */
 
@@ -119,6 +125,8 @@ public class UserYouthData implements Serializable {
 
     private String emailId;
 
+    private String imageId;
+
     public byte[] getFinishHistory() {
         return JSON.toJSONBytes(finishHistory);
     }
@@ -141,6 +149,10 @@ public class UserYouthData implements Serializable {
 
     public void setSendHistory(byte[] sendHistory) {
         this.sendHistory = conversionJsonList(sendHistory);
+    }
+
+    public void putSendHistory(FinishLogDTO finishLog) {
+        this.sendHistory.add(finishLog);
     }
 
     public UserYouthData formatting() {
@@ -198,6 +210,7 @@ public class UserYouthData implements Serializable {
     private List<FinishLogDTO> conversionJsonList(byte[] content) {
         List<FinishLogDTO> finish = new ArrayList<>();
         List<JSONObject> list = JSON.parseObject(content, List.class);
+        if (Objects.isNull(list)) return finish;
         for (JSONObject obj : list) if (!obj.isEmpty())
             finish.add(JSON.parseObject(obj.toString(), FinishLogDTO.class));
         return finish;

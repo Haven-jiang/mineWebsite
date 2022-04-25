@@ -7,7 +7,7 @@ spring:
     cache: false
   datasource:
     username: root
-    password: asdf1476
+    password: Justholdway521
     url: jdbc:mysql://127.0.0.1:3306/myWeb?useUnicode=true&characterEncoding=UTF-8&serverTimezone=GMT
     driver-class-name: com.mysql.cj.jdbc.Driver
     type: com.alibaba.druid.pool.DruidDataSource
@@ -37,7 +37,7 @@ spring:
   # 配置rabbitmq服务
   rabbitmq:
     username: guest
-    password: Justholdway521
+    password: guest
     virtual-host: /
     host: 127.0.0.1
     port: 5672
