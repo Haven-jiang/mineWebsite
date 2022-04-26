@@ -1,5 +1,6 @@
 package com.Haven.scheduler.job;
 
+import com.Haven.DTO.FinishLogDTO;
 import com.Haven.DTO.ResponsePackDTO;
 import com.Haven.entity.UserYouthData;
 import com.Haven.mapper.UserYouthDataMapper;
@@ -15,6 +16,7 @@ import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 import static com.Haven.utils.ConversionUtil.*;
 import static com.Haven.utils.ImageWatermarkUtil.markImageByText;
@@ -31,9 +33,12 @@ public class YouthLearnJob extends QuartzJobBean {
 
     private final EmailSendService emailSendService;
 
+    private final UserYouthDataMapper userYouthDataMapper;
+
     public YouthLearnJob(JxYouthService jxYouthService, EmailSendService emailSendService, UserYouthDataMapper userYouthDataMapper) {
         this.jxYouthService = jxYouthService;
         this.emailSendService = emailSendService;
+        this.userYouthDataMapper = userYouthDataMapper;
     }
 
     @Override
@@ -52,8 +57,11 @@ public class YouthLearnJob extends QuartzJobBean {
             markImageByText(userYouthData.getUserid() + ' ' + userYouthData.getRealName(), getImagePathById(userYouthData.getImageId()), null, null);
 
             //TODO: 发邮件
-            if (!userYouthData.getEmailId().isEmpty())
+            if (!userYouthData.getEmailId().isEmpty()) {
                 emailSendService.sendMimeMail(buildEmailInfoDTO(userYouthData));
+                userYouthData.putSendHistory(new FinishLogDTO(LocalDateTime.now(), getImagePathById(userYouthData.getImageId())));
+                userYouthDataMapper.updateById(userYouthData);
+            }
 
         } catch (IOException e) {
             e.printStackTrace();

@@ -1,6 +1,7 @@
 package com.Haven.service.impl;
 
 import com.Haven.DTO.UserYouthDataDTO;
+import com.Haven.DTO.UserYouthReloadDataDTO;
 import com.Haven.VO.UserYouthInfoVO;
 import com.Haven.entity.UserEmailInfo;
 import com.Haven.entity.UserResultImage;
@@ -11,20 +12,17 @@ import com.Haven.mapper.UserYouthDataMapper;
 import com.Haven.service.UserYouthDataService;
 import com.Haven.service.UserYouthTaskService;
 import com.Haven.utils.CommonUtil;
-import com.Haven.utils.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
+import static com.Haven.utils.CalendarCheckUtil.checkTime;
 import static com.Haven.utils.ConversionUtil.*;
 import static com.Haven.utils.LinkTableUtil.initImage;
-import static com.Haven.utils.RandomUtil.getRandomUUID;
 
 /**
  * 大学习数据服务实现类 UserYouthDataServiceImpl
@@ -47,8 +45,10 @@ public class UserYouthDataServiceImpl implements UserYouthDataService {
 
     @Autowired
     private UserResultImageMapper userResultImageMapper;
-    //TODO: CRUD 增删改查
-    //TODO: 信息增加
+
+
+    //TODO = CRUD 增删改查
+    //TODO - 信息增加
 
     /**
      * 添加一个青年大学习用户信息
@@ -62,15 +62,24 @@ public class UserYouthDataServiceImpl implements UserYouthDataService {
 
     @Override
     public void addUserYouthData(String userid, String nid, String cron, String email, String realName) {
+
+        //查询用户 判断是否存在
         if (checkYouthData(userid))
-            return;
+            return; //用户已存在
 
+        //构建UserYouthData对象
         UserYouthData userYouthData = buildUserYouthData(userid, nid, cron, realName);
-        if (Objects.nonNull(email)) buildEmail(email, userYouthData);
-        buildImage(userYouthData);
 
+        //插入数据库
         userYouthDataMapper.insert(userYouthData);
+
+        //绑定邮箱和图片路径
+        if (Objects.nonNull(email)) bindEmail(email, userYouthData);
+        bindImage(userYouthData);
+
+        //注册定时任务
         userYouthTaskService.registerTask(userYouthData);
+        //成功
     }
 
     /**
@@ -94,54 +103,149 @@ public class UserYouthDataServiceImpl implements UserYouthDataService {
             addUserYouthData(userYouthInfoVO);
     }
 
-    //TODO: 信息删除
+    //TODO - 信息删除
 
     public void removeUserYouthData(String userid) {
+
+        //查询用户信息
         UserYouthData userYouthData = userYouthDataMapper.selectOne(
                 new LambdaQueryWrapper<UserYouthData>()
                         .select()
                         .eq(UserYouthData::getUserid, userid)
         );
 
-        if (Objects.isNull(userYouthData))
+        if (Objects.isNull(userYouthData)) return; //用户不存在
 
-
+        //删除对应imagePath
         userResultImageMapper.delete(
                 new LambdaQueryWrapper<UserResultImage>()
                         .select()
                         .eq(UserResultImage::getUuid, userYouthData.getImageId())
         );
+
+        //删除对应email
         userEmailInfoMapper.delete(
                 new LambdaQueryWrapper<UserEmailInfo>()
                         .select()
                         .eq(UserEmailInfo::getUuid, userYouthData.getEmailId())
         );
 
+        //删除用户
         userYouthDataMapper.deleteById(userYouthData);
+
+        //删除定时任务
+        userYouthTaskService.removeTask(userYouthData);
+
+        //删除成功
     }
 
-    //TODO: 信息修改
+    public void removeUserYouthData(UserYouthInfoVO userYouthInfo) {
+        removeUserYouthData(userYouthInfo.getUserid());
+    }
 
-    //TODO: 信息查询
+    //TODO - 信息修改
 
-    private UserYouthData buildEmail(String email, UserYouthData userYouthData) {
+    public void updateUserYouthData(String userid, String nid, String cron, String email, String realName) {
+
+        //查询并实例化UserYouthData实体类
+        UserYouthData userYouthData = userYouthDataMapper.selectOne(
+                new LambdaQueryWrapper<UserYouthData>()
+                        .select()
+                        .eq(UserYouthData::getUserid, userid)
+        );
+
+        if (Objects.isNull(userYouthData)) return;
+
+        //修改数据
+        userYouthData
+                .settingNid(nid)
+                .settingCron(cron)
+                .settingRealName(realName);
+
+        //UserYouthData类上传数据库
+        userYouthDataMapper.updateById(userYouthData);
+
+        if (Objects.nonNull(email)) bindEmail(email, userYouthData);
+    }
+
+    public void updateUserYouthData(UserYouthInfoVO userYouthInfo) {
+        updateUserYouthData(userYouthInfo.getUserid(), userYouthInfo.getNid(), userYouthInfo.getCron(), userYouthInfo.getEmail(), userYouthInfo.getRealName());
+    }
+
+    //TODO - 信息查询
+
+    public UserYouthDataDTO queryUserYouthInfoOne(String userid) {
+
+        return userYouthDataMapper.selectOne(
+                new LambdaQueryWrapper<UserYouthData>()
+                        .select()
+                        .eq(UserYouthData::getUserid, userid)
+        ).toUserYouthDataDTO();
+
+    }
+
+    public List<UserYouthDataDTO> queryUserYouthInfoByStatus(boolean isFinish) {
+
+        fixStatus();
+
+        List<UserYouthDataDTO> youthInfoVOList = new ArrayList<>();
+
+        for (UserYouthData userYouthData : userYouthDataMapper.selectList(
+                new LambdaQueryWrapper<UserYouthData>()
+                        .select()
+                        .eq(UserYouthData::isStatus, isFinish)))
+
+            youthInfoVOList.add(userYouthData.toUserYouthDataDTO());
+
+        return youthInfoVOList;
+    }
+
+    public List<UserYouthDataDTO> queryUserYouthInfoAll() {
+
+        List<UserYouthDataDTO> youthInfoVOList = new ArrayList<>();
+
+        for (UserYouthData userYouthData : userYouthDataMapper.selectList(
+                new LambdaQueryWrapper<UserYouthData>()
+                        .select()))
+            youthInfoVOList.add(userYouthData.toUserYouthDataDTO());
+
+        return youthInfoVOList;
+    }
+
+    public void fixStatus() {
+
+        for (UserYouthData userYouthData : userYouthDataMapper.selectList(
+                new LambdaQueryWrapper<UserYouthData>()
+                        .select()))
+
+            if (checkTime(userYouthData.getLastFinishTime()))
+                userYouthDataMapper.updateById(userYouthData.settingStatus(true));
+    }
+
+
+
+    private void bindEmail(String email, UserYouthData userYouthData) {
 
         if (CommonUtil.checkEmail(email)) {
 
-            String uuid = getRandomUUID(28);
+            if (Objects.nonNull(
+                    userEmailInfoMapper.selectOne(
+                            new LambdaQueryWrapper<UserEmailInfo>()
+                                    .select()
+                                    .eq(UserEmailInfo::getUuid, userYouthData.getEmailId())
+                    )))
 
-            userYouthData.setEmailId(uuid);
+                userYouthDataMapper.updateById(userYouthData);
 
             userEmailInfoMapper.insert(
                     UserEmailInfo
                             .builder()
-                            .uuid(uuid)
+                            .uuid(userYouthData.getEmailId())
                             .email(email)
                             .build()
             );
 
         }
-        return userYouthData;
     }
 
     private boolean checkYouthData(String userid) {
@@ -165,30 +269,25 @@ public class UserYouthDataServiceImpl implements UserYouthDataService {
     }
 
     @Override
-    public UserYouthDataDTO selectYouthDataDTO(String userid) {
+    public UserYouthReloadDataDTO selectYouthDataDTO(String userid) {
 
-        return toUserYouthDataDTO(selectYouthData(userid));
+        return selectYouthData(userid).toUserYouthReloadDataDTO();
 
     }
 
-    private UserYouthData buildImage(UserYouthData userYouthData) {
+    private void bindImage(UserYouthData userYouthData) {
 
         String curImagePath = initImage(userYouthData);
-
-        String uuid = getRandomUUID(25);
-        userYouthData.setImageId(uuid);
 
         userResultImageMapper.insert(
                 UserResultImage
                         .builder()
-                        .uuid(uuid)
+                        .uuid(userYouthData.getImageId())
                         .currentImagePath(curImagePath)
                         .historyImagePath(new ArrayList<>(List.of(curImagePath)))
                         .build()
         );
 
-
-        return userYouthData;
 
     }
 }

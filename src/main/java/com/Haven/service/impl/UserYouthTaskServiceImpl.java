@@ -9,15 +9,13 @@ import com.Haven.utils.QuartzUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import static com.Haven.utils.ConversionUtil.toCronTaskDTO;
-
 @Service
 public class UserYouthTaskServiceImpl implements UserYouthTaskService {
 
     @Override
     public boolean registerTask(UserYouthData userYouthData) {
 
-        CronTaskDTO task = toCronTaskDTO(userYouthData);
+        CronTaskDTO task = userYouthData.toCronTaskDTO();
 
         return QuartzUtil.addJob(task, YouthLearnJob.class);
     }
@@ -25,7 +23,7 @@ public class UserYouthTaskServiceImpl implements UserYouthTaskService {
     @Override
     public boolean modifyTask(UserYouthData userYouthData) {
 
-        CronTaskDTO task = toCronTaskDTO(userYouthData);
+        CronTaskDTO task = userYouthData.toCronTaskDTO();
 
         return QuartzUtil.modifyJobTime(task);
     }
@@ -33,7 +31,7 @@ public class UserYouthTaskServiceImpl implements UserYouthTaskService {
     @Override
     public boolean removeTask(UserYouthData userYouthData) {
 
-        CronTaskDTO task = toCronTaskDTO(userYouthData);
+        CronTaskDTO task = userYouthData.toCronTaskDTO();
 
         return QuartzUtil.removeJob(task);
     }

@@ -2,6 +2,8 @@ package com.Haven.VO;
 
 import lombok.*;
 
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 
 /**
@@ -20,13 +22,13 @@ public class UserYouthInfoVO implements Serializable {
     /**
      * 学号(必填)
      */
-
+    @NotBlank(message = "学号/姓名不能为空")
     private String userid;
 
     /**
      * 班级团委(必填)
      */
-
+    @NotBlank(message = "团委不能为空")
     private String nid;
 
     /**
@@ -39,6 +41,7 @@ public class UserYouthInfoVO implements Serializable {
      * 邮箱(选填)
      */
 
+    @Email(message = "邮箱格式不正确")
     private String email;
 
     /**

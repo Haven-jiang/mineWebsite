@@ -40,6 +40,10 @@ public class UserResultImage implements Serializable {
         this.historyImagePath = JSON.parseObject(finishHistory, List.class);
     }
 
+    public List<String> getHistoryImagePathObj() {
+        return this.historyImagePath;
+    }
+
     public void putSendHistory(String historyImagePath) {
         this.historyImagePath.add(historyImagePath);
     }

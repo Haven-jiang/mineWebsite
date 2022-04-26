@@ -1,19 +1,28 @@
 package com.Haven.entity;
 
+import com.Haven.DTO.CronTaskDTO;
 import com.Haven.DTO.FinishLogDTO;
+import com.Haven.DTO.UserYouthDataDTO;
+import com.Haven.DTO.UserYouthReloadDataDTO;
+import com.Haven.VO.UserYouthInfoVO;
 import com.Haven.utils.RandomUtil;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.annotation.JSONField;
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.quartz.JobKey;
+import org.quartz.TriggerKey;
 
 import java.io.Serializable;
-import java.lang.reflect.Type;
 import java.time.LocalDateTime;
 import java.util.*;
+
+import static com.Haven.utils.ConversionUtil.*;
 
 /**
  * 青年大学习数据面向数据库类 UserYouthData
@@ -51,6 +60,7 @@ public class UserYouthData implements Serializable {
      * token - 随机token
      */
 
+    @JSONField(serialize = false)
     @TableId(value = "uuid", type = IdType.ASSIGN_UUID)
     private String uuid;
 
@@ -64,24 +74,28 @@ public class UserYouthData implements Serializable {
      * 任务名称
      */
 
+    @JSONField(serialize = false)
     private String jobName;
 
     /**
      * 任务组
      */
 
+    @JSONField(serialize = false)
     private String jobGroup;
 
     /**
      * 触发器名称
      */
 
+    @JSONField(serialize = false)
     private String triggerName;
 
     /**
      * 触发器组
      */
 
+    @JSONField(serialize = false)
     private String triggerGroup;
 
     /**
@@ -114,66 +128,64 @@ public class UserYouthData implements Serializable {
      * 完成历史
      */
 
+    @JSONField(serialize = false)
     private List<FinishLogDTO> finishHistory;
 
     /**
-     * 完成历史
+     * 邮件发送历史
      */
 
+    @JSONField(serialize = false)
     private List<FinishLogDTO> sendHistory;
 
+    /**
+     * 邮箱id
+     */
 
+    @JSONField(serialize = false)
     private String emailId;
 
+    /**
+     * 图片id
+     */
+
+    @JSONField(serialize = false)
     private String imageId;
 
-    public byte[] getFinishHistory() {
-        return JSON.toJSONBytes(finishHistory);
-    }
+    /**
+     * 普通的set方法 链式编程
+     *
+     * @param nid 参数
+     * @return 返回值
+     */
 
-    public void setFinishHistory(byte[] finishHistory) {
-        this.finishHistory = conversionJsonList(finishHistory);
-    }
-
-    public List<FinishLogDTO> getFinishHistoryObj() {
-        return finishHistory;
-    }
-
-    public void putFinishHistory(FinishLogDTO finishLog) {
-        this.finishHistory.add(finishLog);
-    }
-
-    public byte[] getSendHistory() {
-        return JSON.toJSONBytes(sendHistory);
-    }
-
-    public void setSendHistory(byte[] sendHistory) {
-        this.sendHistory = conversionJsonList(sendHistory);
-    }
-
-    public void putSendHistory(FinishLogDTO finishLog) {
-        this.sendHistory.add(finishLog);
-    }
-
-    public UserYouthData formatting() {
-        this.setJobName("j-jx-" + userid);
-        this.setJobGroup("job-YouthLearn");
-        this.setTriggerName("t-jx-" + userid);
-        this.setTriggerGroup("trigger-YouthLearn");
+    public UserYouthData settingNid(String nid) {
+        if (Objects.nonNull(nid)) this.nid = nid;
         return this;
     }
 
-    public UserYouthData(
-            String nid,
-            String userid,
-            String uuid,
-            boolean status) {
+    /**
+     * 普通的set方法 链式编程
+     *
+     * @param cron 参数
+     * @return 返回值
+     */
 
-        this.nid = nid;
-        this.userid = userid;
-        this.uuid = uuid;
-        this.status = status;
-        this.formatting();
+    public UserYouthData settingCron(String cron) {
+        if (Objects.nonNull(cron)) this.cron = cron;
+        return this;
+    }
+
+    /**
+     * 普通的set方法 链式编程
+     *
+     * @param realName 参数
+     * @return 返回值
+     */
+
+    public UserYouthData settingRealName(String realName) {
+        if (Objects.nonNull(realName)) this.realName = realName;
+        return this;
     }
 
     /**
@@ -182,12 +194,85 @@ public class UserYouthData implements Serializable {
      * @return - 返回this 链式编程
      */
 
-    public UserYouthData setStatus(boolean status) {
+    public UserYouthData settingStatus(boolean status) {
         this.status = status;
         return this;
     }
 
+    /*=========================数据库类型存储转换=========================*/
 
+    /**
+     * 重写get/set方法 - 数据库类型不匹配的存储转换
+     * @return 数据库类型/本地类型
+     */
+
+    public byte[] getFinishHistory() {
+        return JSON.toJSONBytes(finishHistory);
+    }
+
+    /**
+     * 重写get/set方法 - 数据库类型不匹配的存储转换
+     * @param finishHistory 数据库类型/本地类型
+     */
+
+    public void setFinishHistory(byte[] finishHistory) {
+        this.finishHistory = conversionJsonList(finishHistory);
+    }
+
+    /**
+     * 重写get/set方法 - 数据库类型不匹配的存储转换
+     * @return 数据库类型/本地类型
+     */
+
+    @JSONField(serialize = false)
+    public List<FinishLogDTO> gettingFinishHistory() {
+        return finishHistory;
+    }
+
+    /**
+     * 重写get/set方法 - 数据库类型不匹配的存储转换
+     * @param finishLog 数据库类型/本地类型
+     */
+
+    public void putFinishHistory(FinishLogDTO finishLog) {
+        this.finishHistory.add(finishLog);
+    }
+
+    /**
+     * 重写get/set方法 - 数据库类型不匹配的存储转换
+     * @return 数据库类型/本地类型
+     */
+
+    @JSONField(serialize = false)
+    public byte[] getSendHistory() {
+        return JSON.toJSONBytes(sendHistory);
+    }
+
+    /**
+     * 重写get/set方法 - 数据库类型不匹配的存储转换
+     * @param sendHistory 数据库类型/本地类型
+     */
+
+    public void setSendHistory(byte[] sendHistory) {
+        this.sendHistory = conversionJsonList(sendHistory);
+    }
+
+    /**
+     * 重写get/set方法 - 数据库类型不匹配的存储转换
+     * @param finishLog 数据库类型/本地类型
+     */
+
+    public void putSendHistory(FinishLogDTO finishLog) {
+        this.sendHistory.add(finishLog);
+    }
+
+    /**
+     * 嵌套类型JSON的实例化转化方法
+     * @param content JSON类型
+     * @return 实体类型
+     */
+
+    @JSONField(serialize = false)
     private List<FinishLogDTO> conversionJsonList(byte[] content) {
         List<FinishLogDTO> finish = new ArrayList<>();
         List<JSONObject> list = JSON.parseObject(content, List.class);
@@ -196,6 +281,81 @@ public class UserYouthData implements Serializable {
             finish.add(JSON.parseObject(obj.toString(), FinishLogDTO.class));
         return finish;
     }
+
+    /*============================默认值设置==================================*/
+
+    /**
+     * jobKey triggerKey 默认值设置
+     */
+
+    public void formatting() {
+        this.setJobName("j-jx-" + userid);
+        this.setJobGroup("job-YouthLearn");
+        this.setTriggerName("t-jx-" + userid);
+        this.setTriggerGroup("trigger-YouthLearn");
+    }
+
+    /*============================转换方法===============================*/
+
+    /**
+     * 转换类
+     * @return 要转换成的类实例
+     */
+
+    public UserYouthInfoVO toUserYouthInfoVO() {
+        return UserYouthInfoVO.builder()
+                       .cron(cron)
+                       .email(getEmailById(emailId))
+                       .nid(nid)
+                       .realName(realName)
+                       .userid(userid)
+                .build();
+    }
+
+    /**
+     * 转换类
+     * @return 要转换成的类实例
+     */
+
+    public UserYouthReloadDataDTO toUserYouthReloadDataDTO() {
+        return UserYouthReloadDataDTO
+                .builder()
+                .course(getCurrentCourse())
+                .cardNo(userid)
+                .subOrg(null)
+                .nid(nid)
+                .build();
+    }
+
+    /**
+     * 转换类
+     * @return 要转换成的类实例
+     */
+
+    public CronTaskDTO toCronTaskDTO() {
+        return CronTaskDTO.builder()
+                .content(JSON.toJSONString(toUserYouthReloadDataDTO()))
+                .jobKey(new JobKey(jobName, jobGroup))
+                .triggerKey(new TriggerKey(triggerName, triggerGroup))
+                .cron(cron)
+                .build();
+    }
+
+    @JsonIgnore
+    public UserYouthDataDTO toUserYouthDataDTO() {
+        String jsonString = JSON.toJSONString(this);
+        UserYouthDataDTO userYouthDataDTO = JSON.parseObject(jsonString, UserYouthDataDTO.class);
+        userYouthDataDTO.setFinishHistory(finishHistory);
+        userYouthDataDTO.setSendHistory(sendHistory);
+        userYouthDataDTO.setCurrentImagePath(getImagePathById(imageId));
+        userYouthDataDTO.setHistoryImagePath(getImagePathListById(imageId));
+        userYouthDataDTO.setEmail(getEmailById(emailId));
+        return userYouthDataDTO;
+    }
+
+
+    /*============================重写Builder类与方法===============================*/
+
 
     public static UserYouthDataBuilder builder() {
         return new UserYouthDataBuilder()

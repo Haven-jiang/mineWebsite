@@ -1,9 +1,8 @@
 package com.Haven.utils;
 
-import com.Haven.DTO.CronTaskDTO;
 import com.Haven.DTO.EmailContentDTO;
 import com.Haven.DTO.EmailInfoDTO;
-import com.Haven.DTO.UserYouthDataDTO;
+import com.Haven.DTO.UserYouthReloadDataDTO;
 import com.Haven.entity.UserEmailInfo;
 import com.Haven.entity.UserResultImage;
 import com.Haven.entity.UserYouthData;
@@ -14,8 +13,6 @@ import com.Haven.mapper.UserYouthDataMapper;
 import com.Haven.mapper.YouthCourseMapper;
 import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import org.quartz.JobKey;
-import org.quartz.TriggerKey;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
@@ -26,6 +23,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+
+import static com.Haven.utils.RandomUtil.getRandomUUID;
 
 @Component
 public class ConversionUtil {
@@ -47,11 +46,11 @@ public class ConversionUtil {
     }
 
     public static UserYouthData toUserYouthData(String json) {
-        UserYouthDataDTO userYouthDataDTO = JSON.parseObject(json, UserYouthDataDTO.class);
+        UserYouthReloadDataDTO userYouthReloadDataDTO = JSON.parseObject(json, UserYouthReloadDataDTO.class);
         return userYouthDataMapper.selectOne(
                 new LambdaQueryWrapper<UserYouthData>()
                         .select()
-                        .eq(UserYouthData::getUserid, userYouthDataDTO.getCardNo())
+                        .eq(UserYouthData::getUserid, userYouthReloadDataDTO.getCardNo())
         );
     }
 
@@ -71,30 +70,13 @@ public class ConversionUtil {
         ).getUri();
     }
 
-    public static UserYouthDataDTO toUserYouthDataDTO(UserYouthData userYouthData) {
-        return UserYouthDataDTO
-                .builder()
-                .course(getCurrentCourse())
-                .cardNo(userYouthData.getUserid())
-                .subOrg(null)
-                .nid(userYouthData.getNid())
-                .build();
-    }
-
-    public static CronTaskDTO toCronTaskDTO(UserYouthData userYouthData) {
-        return CronTaskDTO.builder()
-                .content(JSON.toJSONString(toUserYouthDataDTO(userYouthData)))
-                .jobKey(new JobKey(userYouthData.getJobName(), userYouthData.getJobGroup()))
-                .triggerKey(new TriggerKey(userYouthData.getTriggerName(), userYouthData.getTriggerGroup()))
-                .cron(userYouthData.getCron())
-                .build();
-    }
-
     public static UserYouthData buildUserYouthData(String userid, String nid, String cron, String realName) {
 
         if (Objects.isNull(cron)) cron = RandomUtil.getRandomCron();
 
         return UserYouthData.builder()
+                .imageId(getRandomUUID(28))
+                .emailId(getRandomUUID(28))
                 .nid(nid)
                 .realName(realName)
                 .userid(userid)
@@ -118,6 +100,16 @@ public class ConversionUtil {
                         .select()
                         .eq(UserResultImage::getUuid, uuid)
         ).getCurrentImagePath();
+    }
+
+    public static List<String> getImagePathListById(String uuid) {
+
+        return userResultImageMapper.selectOne(
+                new LambdaQueryWrapper<UserResultImage>()
+                        .select()
+                        .eq(UserResultImage::getUuid, uuid)
+        ).getHistoryImagePathObj();
+
     }
 
     public static EmailInfoDTO buildEmailInfoDTO(UserYouthData userYouthData) throws IOException {

@@ -1,7 +1,6 @@
 package com.Haven.service;
 
-import com.Haven.DTO.CronTaskDTO;
-import com.Haven.DTO.UserYouthDataDTO;
+import com.Haven.DTO.UserYouthReloadDataDTO;
 import com.Haven.VO.UserYouthInfoVO;
 import com.Haven.entity.UserYouthData;
 
@@ -24,6 +23,6 @@ public interface UserYouthDataService {
 
     UserYouthData selectYouthData(String userid);
 
-    UserYouthDataDTO selectYouthDataDTO(String userid);
+    UserYouthReloadDataDTO selectYouthDataDTO(String userid);
 
 }

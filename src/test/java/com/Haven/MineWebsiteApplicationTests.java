@@ -1,6 +1,7 @@
 package com.Haven;
 
 import com.Haven.DTO.ResponsePackDTO;
+import com.Haven.DTO.UserYouthDataDTO;
 import com.Haven.VO.UserYouthInfoVO;
 import com.Haven.entity.UserYouthData;
 import com.Haven.mapper.UserYouthDataMapper;
@@ -56,7 +57,14 @@ class MineWebsiteApplicationTests {
 
     @Test
     void contextLoads() throws IOException {
-        jxYouthService.updateCourse();
+//        jxYouthService.updateCourse();
+        UserYouthData userYouthData = userYouthDataMapper.selectOne(
+                new LambdaQueryWrapper<UserYouthData>()
+                        .select()
+                        .eq(UserYouthData::getUserid, "20010315")
+        );
+        UserYouthDataDTO userYouthDataDTO = userYouthData.toUserYouthDataDTO();
+        System.out.println(userYouthDataDTO);
     }
 
 }
