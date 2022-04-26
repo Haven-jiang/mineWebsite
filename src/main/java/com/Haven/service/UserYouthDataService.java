@@ -15,11 +15,6 @@ import java.util.List;
  */
 
 public interface UserYouthDataService {
-    void addUserYouthData(String userid, String nid);
-
-    void addUserYouthData(String userid, String nid, String cron);
-
-    void addUserYouthData(String userid, String nid, String cron, String email);
 
     void addUserYouthData(String userid, String nid, String cron, String email, String realName);
 

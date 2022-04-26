@@ -15,9 +15,5 @@ public interface JxYouthService {
 
     void updateResult();
 
-    void updateCourse(String courseId);
-
-    void updateCourse(String courseId, String title, String uri);
-
     void updateCourse();
 }

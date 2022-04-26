@@ -33,4 +33,4 @@ build/
 .vscode/
 
 ### Java Class ###
-/src/main/java/com/Haven/controller/InitSqlController.java
+/src/main/java/com/Haven/controller/ignore

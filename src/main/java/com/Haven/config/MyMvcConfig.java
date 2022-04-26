@@ -9,7 +9,7 @@ public class MyMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addViewControllers(ViewControllerRegistry registry) {
-        registry.addViewController("/function/youthlearn/jiangxi/getcourse").setViewName("/youthlearn");
+//        registry.addViewController("/function/youthlearn/jiangxi/getcourse").setViewName("/youthlearn");
 //        registry.addViewController("/user/registration").setViewName("/pages/examples/register");
 //        registry.addViewController("/login").setViewName("/pages/examples/login");
 //        registry.addViewController("/pages/calendar.html").setViewName("/pages/calendar");

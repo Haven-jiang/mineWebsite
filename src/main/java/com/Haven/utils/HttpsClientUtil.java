@@ -14,11 +14,15 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 
-import java.io.IOException;
+import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class HttpsClientUtil {
     /**
@@ -74,6 +78,37 @@ public class HttpsClientUtil {
 
     public static ResponsePackDTO doGet(String url) {
         return doGet(url, null);
+    }
+
+    public static String doDownloadString(String fileUrl) {
+        String content = "";
+        HttpURLConnection httpUrl = null;
+        char[] buffer = new char[1024];
+        Writer writer = new StringWriter();
+        int size = 0;
+
+        try {
+            URL url = new URL(fileUrl);
+            //支持http特定功能
+            httpUrl = (HttpURLConnection) url.openConnection();
+            httpUrl.connect();
+            //缓存输入流,提供了一个缓存数组,每次调用read的时候会先尝试从缓存区读取数据
+//            BufferedInputStream bis = new BufferedInputStream(httpUrl.getInputStream());
+            BufferedReader br = new BufferedReader(new InputStreamReader(httpUrl.getInputStream(), StandardCharsets.UTF_8));
+
+
+            while ((size = br.read(buffer)) != -1) {
+                writer.write(buffer, 0, size);
+            }
+            content = writer.toString();
+            //记得及时释放资源
+            writer.close();
+            br.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return content;
     }
 
     /**
@@ -133,8 +168,10 @@ public class HttpsClientUtil {
             // 创建Http Post请求
             HttpPost httpPost = new HttpPost(url);
             // 创建请求内容
-            StringEntity entity = new StringEntity(json, ContentType.APPLICATION_JSON);
-            httpPost.setEntity(entity);
+            if (!Objects.isNull(json)) {
+                StringEntity entity = new StringEntity(json, ContentType.APPLICATION_JSON);
+                httpPost.setEntity(entity);
+            }
             // 执行http请求
             response = httpClient.execute(httpPost);
             status = response.getStatusLine().getStatusCode();

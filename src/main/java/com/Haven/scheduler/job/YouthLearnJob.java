@@ -25,7 +25,7 @@ import static com.Haven.utils.LinkTableUtil.addImagePath;
 @PersistJobDataAfterExecution
 public class YouthLearnJob extends QuartzJobBean {
 
-    private Logger logger = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final JxYouthService jxYouthService;
 
@@ -38,6 +38,8 @@ public class YouthLearnJob extends QuartzJobBean {
 
     @Override
     protected void executeInternal(JobExecutionContext context) throws JobExecutionException {
+        jxYouthService.updateCourse();
+
         try {
             String data = (String) context.getJobDetail().getJobDataMap().get("data");
             ResponsePackDTO responsePackDTO = new ResponsePackDTO(404, "");

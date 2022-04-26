@@ -4,6 +4,7 @@ import com.Haven.service.JxYouthService;
 import com.Haven.service.UserYouthDataService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
@@ -16,12 +17,4 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/function/youthlearn")
 @Controller
 public class YouthPostController {
-
-    @Autowired
-    private JxYouthService jxYouthService;
-
-    @RequestMapping("/jiangxi/course")
-    public void updateCourse(String id, String title, String uri) {
-        jxYouthService.updateCourse(id, title, uri);
-    }
 }

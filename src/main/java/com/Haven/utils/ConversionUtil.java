@@ -90,41 +90,10 @@ public class ConversionUtil {
                 .build();
     }
 
-    public static UserYouthData buildUserYouthData(String userid, String nid) {
-        return UserYouthData.builder()
-                .nid(nid)
-                .userid(userid)
-                .build();
-    }
-
-    public static UserYouthData buildUserYouthData(String userid, String nid, String cron) {
-        if (cron.isEmpty())
-            return buildUserYouthData(userid, nid);
-        return UserYouthData.builder()
-                .nid(nid)
-                .userid(userid)
-                .cron(cron)
-                .build();
-    }
-
     public static UserYouthData buildUserYouthData(String userid, String nid, String cron, String realName) {
-        if (Objects.isNull(cron) || Objects.isNull(realName)) {
-            if (Objects.isNull(realName) && Objects.isNull(cron)) {
-                return buildUserYouthData(userid, nid);
-            }else if (Objects.isNull(cron)){
-                return UserYouthData.builder()
-                        .nid(nid)
-                        .realName(realName)
-                        .userid(userid)
-                        .build();
-            }else {
-                return UserYouthData.builder()
-                        .nid(nid)
-                        .cron(cron)
-                        .userid(userid)
-                        .build();
-            }
-        }
+
+        if (Objects.isNull(cron)) cron = RandomUtil.getRandomCron();
+
         return UserYouthData.builder()
                 .nid(nid)
                 .realName(realName)

@@ -187,6 +187,16 @@ public class UserYouthData implements Serializable {
         return this;
     }
 
+
+    private List<FinishLogDTO> conversionJsonList(byte[] content) {
+        List<FinishLogDTO> finish = new ArrayList<>();
+        List<JSONObject> list = JSON.parseObject(content, List.class);
+        if (Objects.isNull(list)) return finish;
+        for (JSONObject obj : list) if (!obj.isEmpty())
+            finish.add(JSON.parseObject(obj.toString(), FinishLogDTO.class));
+        return finish;
+    }
+
     public static UserYouthDataBuilder builder() {
         return new UserYouthDataBuilder()
                 .cron(RandomUtil.getRandomCron())
@@ -195,6 +205,22 @@ public class UserYouthData implements Serializable {
     }
 
     public static class UserYouthDataBuilder {
+
+        public UserYouthDataBuilder nid(String nid) {
+            if (Objects.nonNull(nid)) this.nid = nid;
+            return this;
+        }
+
+        public UserYouthDataBuilder cron(String cron) {
+            if (Objects.nonNull(cron)) this.cron = cron;
+            return this;
+        }
+
+        public UserYouthDataBuilder realName(String realName) {
+            if (Objects.nonNull(realName)) this.realName = realName;
+            return this;
+        }
+
 
         public UserYouthDataBuilder userid(String userid) {
 
@@ -207,12 +233,4 @@ public class UserYouthData implements Serializable {
         }
     }
 
-    private List<FinishLogDTO> conversionJsonList(byte[] content) {
-        List<FinishLogDTO> finish = new ArrayList<>();
-        List<JSONObject> list = JSON.parseObject(content, List.class);
-        if (Objects.isNull(list)) return finish;
-        for (JSONObject obj : list) if (!obj.isEmpty())
-            finish.add(JSON.parseObject(obj.toString(), FinishLogDTO.class));
-        return finish;
-    }
 }
